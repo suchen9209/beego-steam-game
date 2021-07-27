@@ -14,6 +14,10 @@ type GameController struct {
 	beego.Controller
 }
 
+func (g *GameController) AddGame() {
+	g.TplName = "add_game.html"
+}
+
 func (g *GameController) Get() {
 	id := g.Ctx.Input.Param(":id")
 	idint, err := strconv.Atoi(id)
@@ -27,31 +31,35 @@ func (g *GameController) Get() {
 	o := orm.NewOrm()
 	o.Read(&game)
 
-	s, err := json.Marshal(&game)
-	if err != nil {
-		g.Ctx.Output.Body([]byte("err"))
-	}
-
+	g.Data["Id"] = game.Id
+	g.Data["Name"] = game.GameName
+	g.Data["Link"] = game.Link
+	g.Data["Desc"] = game.Desc
+	g.Data["Platform"] = game.Platform
+	g.Data["GamePlat"] = game.Gameplat
+	g.TplName = "game_detail.html"
 	// gamename := g.Ctx.Input.Param(":gamename")
 
-	g.Ctx.Output.Body(s)
+	// g.Ctx.Output.Body(s)
 }
 
 func (g *GameController) Post() {
-	id := g.Ctx.Input.Param(":id")
-	idint, err := strconv.Atoi(id)
-	fmt.Println(idint)
-	if err != nil {
-		panic("id must be integer")
-	}
-	game := models.GetGameInfo(idint)
+	var game models.Game
+	game.GameName = g.GetString("gameName")
+	game.Link = g.GetString("gameLink")
+	game.Desc = g.GetString("gameDesc")
+	game.Platform = g.GetString("platform")
+	game.Gameplat = g.GetString("gamePlat")
 
-	s, err := json.Marshal(&game)
+	o := orm.NewOrm()
+	game_id, err := o.Insert(&game)
 	if err != nil {
 		g.Ctx.Output.Body([]byte("err"))
 	}
+	redirectUrl := "/game/"
+	redirectUrl += strconv.Itoa(int(game_id))
+	g.Ctx.Redirect(302, redirectUrl)
 
-	g.Ctx.Output.Body(s)
 }
 
 type GameListController struct {
