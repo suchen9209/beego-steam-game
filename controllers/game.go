@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	models "hello/models"
+	"math"
 	"strconv"
 
 	"github.com/beego/beego/v2/client/orm"
@@ -70,15 +70,65 @@ func (g *GameListController) Get() {
 	g.Ctx.Output.Body([]byte("game list"))
 }
 
+type ListGame struct {
+	Id       int
+	GameName string
+	Desc     string
+}
+
 func (g *GameListController) List() {
 	parm_map := g.Ctx.Input.Params()
-	var str string
-	str = "game list list"
-	fmt.Println(parm_map)
-	json_parm, err := json.Marshal(parm_map)
+	per_page := 10
+	page := parm_map["0"]
+	pageInt, err := strconv.Atoi(page)
 	if err != nil {
-		g.Ctx.Output.Body([]byte(err.Error()))
+		panic("Get out here!You monster!")
 	}
-	str = string(json_parm) + str
-	g.Ctx.Output.Body([]byte(str))
+	o := orm.NewOrm()
+	qr := o.QueryTable("game")
+	count, _ := qr.Count()
+
+	qb, _ := orm.NewQueryBuilder("mysql")
+	qb.Select("id", "game_name", "`desc`").
+		From("game").
+		OrderBy("id").Desc().
+		Limit(per_page).Offset((pageInt - 1) * per_page)
+	sql := qb.String()
+	fmt.Println(sql)
+	var games []models.Game
+	// var games []ListGame
+	// res := orm.Params{}
+	// dataNum, _ := o.Raw("select id, game_name from game order").RowsToMap(&res, "id", "game_name")
+	// qqr := o.QueryTable("game").OrderBy("id").Limit(per_page).Offset((pageInt - 1) * per_page)
+	// dataNum, _ := qqr.All(&games)
+	// for key, value := range res {
+	// 	tmp := new(models.Game)
+	// 	tmp.Id, _ = strconv.Atoi(key)
+	// 	tmp.GameName = value.(string)
+	// 	games = append(games, *tmp)
+	// }
+
+	dataNum, _ := o.Raw(sql).QueryRows(&games)
+	page_number := int(math.Ceil(float64(count) / float64(per_page)))
+
+	// fmt.Println(res)
+
+	g.Data["AllCount"] = count
+	g.Data["AllPage"] = page_number
+	g.Data["NowPage"] = pageInt
+	g.Data["DataNumber"] = dataNum
+	g.Data["List"] = games
+	if pageInt-1 <= 0 {
+		g.Data["Prev"] = 1
+	} else {
+		g.Data["Prev"] = pageInt - 1
+	}
+	if pageInt+1 >= page_number {
+		g.Data["Next"] = page_number
+	} else {
+		g.Data["Next"] = pageInt + 1
+	}
+
+	g.TplName = "game_list.html"
+
 }
