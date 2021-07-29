@@ -13,6 +13,8 @@ func init() {
 	// beego.Router("/game/:gamename:string", &controllers.GameController{})
 	beego.Router("/game", &controllers.GameController{})
 	beego.Router("/game_list", &controllers.GameListController{})
+
+	beego.Router("/comment/new", &controllers.CommentController{}, "post:AddComment")
 	// beego.Router("/gaga", &controllers.MainController{})
 	// beego.Router("/api/food",&RestController{},"get:ListFood;post:CreateFood;put:UpdateFood;delete:DeleteFood")
 

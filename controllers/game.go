@@ -31,12 +31,17 @@ func (g *GameController) Get() {
 	o := orm.NewOrm()
 	o.Read(&game)
 
+	var comments []models.Comment
+	qqr := o.QueryTable("comment").Filter("game_id", idint).OrderBy("-create_time").Limit(10)
+	qqr.All(&comments)
+
 	g.Data["Id"] = game.Id
 	g.Data["Name"] = game.GameName
 	g.Data["Link"] = game.Link
 	g.Data["Desc"] = game.Desc
 	g.Data["Platform"] = game.Platform
 	g.Data["GamePlat"] = game.Gameplat
+	g.Data["Comments"] = comments
 	g.TplName = "game_detail.html"
 	// gamename := g.Ctx.Input.Param(":gamename")
 
