@@ -1,7 +1,5 @@
 package models
 
-import "github.com/beego/beego/v2/client/orm"
-
 type Comment struct {
 	Id         int
 	Content    string
@@ -10,14 +8,10 @@ type Comment struct {
 	WriterId   string
 }
 
-func init() {
-	// set default database
-	// orm.RegisterDataBase("default", "mysql", "root@tcp(127.0.0.1:3306)/steam_game?charset=utf8&loc=Local")
+func GetCommentList(game_id int) *[]Comment {
+	var comments []Comment
+	qqr := o.QueryTable("comment").Filter("game_id", game_id).OrderBy("-create_time").Limit(10)
+	qqr.All(&comments)
+	return &comments
 
-	// register model
-	// orm.RegisterModel(new(Game))
-
-	// create table
-	// orm.RunSyncdb("default", false, true)
-	orm.RegisterModel(new(Comment))
 }

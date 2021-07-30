@@ -1,39 +1,50 @@
 package models
 
-import (
-	"github.com/beego/beego/v2/client/orm"
-	_ "github.com/go-sql-driver/mysql"
-)
-
 type Game struct {
-	Id       int
-	GameName string
-	Link     string
-	Desc     string
-	Platform string
-	Gameplat string
+	Id       int    `form:"-"`
+	GameName string `form:"gameName"`
+	Link     string `form:"gameLink"`
+	Desc     string `form:"gameDesc"`
+	Platform string `form:"platform"`
+	Gameplat string `form:"gamePlat"`
 }
 
-func init() {
-	// set default database
-	orm.RegisterDataBase("default", "mysql", "root@tcp(127.0.0.1:3306)/steam_game?charset=utf8&loc=Local")
+const table_name = "game"
 
-	// register model
-	orm.RegisterModel(new(Game))
+// func init() {
+// 	// set default database
+// 	// orm.RegisterDataBase("default", "mysql", "root@tcp(127.0.0.1:3306)/steam_game?charset=utf8&loc=Local")
 
-	// create table
-	// orm.RunSyncdb("default", false, true)
-}
+// 	// register model
+
+// 	// create table
+// 	// orm.RunSyncdb("default", false, true)
+// }
 
 func GetGameInfo(id int) *Game {
-	o := orm.NewOrm()
 	game := Game{Id: id}
 	err := o.Read(&game)
 	if err != nil {
 		panic("no id")
 	}
 	return &game
+}
 
+func AddGame(game *Game) (int64, error) {
+	return o.Insert(&game)
+}
+
+func GetCount() int {
+	qr := o.QueryTable(table_name)
+	count, _ := qr.Count()
+	return int(count)
+}
+
+func GetGameList(page int, per_page int) (*[]Game, int) {
+	var games []Game
+	qqr := o.QueryTable("game").OrderBy("id").Limit(per_page).Offset((page - 1) * per_page)
+	dataNum, _ := qqr.All(&games)
+	return &games, int(dataNum)
 }
 
 // func main() {

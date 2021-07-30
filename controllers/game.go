@@ -1,12 +1,10 @@
 package controllers
 
 import (
-	"fmt"
 	models "hello/models"
 	"math"
 	"strconv"
 
-	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 )
 
@@ -20,51 +18,20 @@ func (g *GameController) AddGame() {
 
 func (g *GameController) Get() {
 	id := g.Ctx.Input.Param(":id")
-	idint, err := strconv.Atoi(id)
-	fmt.Println(idint)
-	if err != nil {
-		panic("id must be integer")
-	}
-	game := models.Game{
-		Id: idint,
-	}
-	o := orm.NewOrm()
-	o.Read(&game)
+	idint, _ := strconv.Atoi(id)
+	game := models.GetGameInfo(idint)
+	comments := models.GetCommentList(idint)
 
-	var comments []models.Comment
-	qqr := o.QueryTable("comment").Filter("game_id", idint).OrderBy("-create_time").Limit(10)
-	qqr.All(&comments)
-
-	g.Data["Id"] = game.Id
-	g.Data["Name"] = game.GameName
-	g.Data["Link"] = game.Link
-	g.Data["Desc"] = game.Desc
-	g.Data["Platform"] = game.Platform
-	g.Data["GamePlat"] = game.Gameplat
+	g.Data["game"] = game
 	g.Data["Comments"] = comments
 	g.TplName = "game_detail.html"
-	// gamename := g.Ctx.Input.Param(":gamename")
-
-	// g.Ctx.Output.Body(s)
 }
 
 func (g *GameController) Post() {
 	var game models.Game
-	game.GameName = g.GetString("gameName")
-	game.Link = g.GetString("gameLink")
-	game.Desc = g.GetString("gameDesc")
-	game.Platform = g.GetString("platform")
-	game.Gameplat = g.GetString("gamePlat")
-
-	o := orm.NewOrm()
-	game_id, err := o.Insert(&game)
-	if err != nil {
-		g.Ctx.Output.Body([]byte("err"))
-	}
-	redirectUrl := "/game/"
-	redirectUrl += strconv.Itoa(int(game_id))
-	g.Ctx.Redirect(302, redirectUrl)
-
+	g.ParseForm(&game)
+	game_id, _ := models.AddGame(&game)
+	g.Ctx.Redirect(302, "/game/"+strconv.Itoa(int(game_id)))
 }
 
 type GameListController struct {
@@ -89,18 +56,16 @@ func (g *GameListController) List() {
 	if err != nil {
 		panic("Get out here!You monster!")
 	}
-	o := orm.NewOrm()
-	qr := o.QueryTable("game")
-	count, _ := qr.Count()
+	count := models.GetCount()
 
-	qb, _ := orm.NewQueryBuilder("mysql")
-	qb.Select("id", "game_name", "`desc`").
-		From("game").
-		OrderBy("id").Desc().
-		Limit(per_page).Offset((pageInt - 1) * per_page)
-	sql := qb.String()
-	fmt.Println(sql)
-	var games []models.Game
+	// qb, _ := orm.NewQueryBuilder("mysql")
+	// qb.Select("id", "game_name", "`desc`").
+	// 	From("game").
+	// 	OrderBy("id").Desc().
+	// 	Limit(per_page).Offset((pageInt - 1) * per_page)
+	// sql := qb.String()
+	// fmt.Println(sql)
+	// var games []models.Game
 	// var games []ListGame
 	// res := orm.Params{}
 	// dataNum, _ := o.Raw("select id, game_name from game order").RowsToMap(&res, "id", "game_name")
@@ -113,7 +78,8 @@ func (g *GameListController) List() {
 	// 	games = append(games, *tmp)
 	// }
 
-	dataNum, _ := o.Raw(sql).QueryRows(&games)
+	// dataNum, _ := o.Raw(sql).QueryRows(&games)
+	games, dataNum := models.GetGameList(pageInt, per_page)
 	page_number := int(math.Ceil(float64(count) / float64(per_page)))
 
 	// fmt.Println(res)
