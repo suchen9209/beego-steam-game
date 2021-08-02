@@ -13,7 +13,13 @@ type GameController struct {
 }
 
 func (g *GameController) AddGame() {
-	g.TplName = "add_game.html"
+	user_id := g.GetSession("user_id")
+	if user_id != nil {
+		g.TplName = "add_game.html"
+	} else {
+		g.Abort("403")
+	}
+
 }
 
 func (g *GameController) Get() {

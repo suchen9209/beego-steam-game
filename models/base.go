@@ -25,5 +25,6 @@ func init() {
 	// orm.RunSyncdb("default", false, true)
 	orm.RegisterModel(new(Comment))
 	orm.RegisterModel(new(Game))
+	orm.RegisterModel(new(User))
 	o = orm.NewOrm()
 }
