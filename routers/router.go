@@ -15,6 +15,9 @@ func init() {
 	beego.Router("/game_list", &controllers.GameListController{})
 
 	beego.Router("/comment/new", &controllers.CommentController{}, "post:AddComment")
+	beego.Router("/login", &controllers.UserController{}, "get:LoginPage")
+	beego.Router("/login", &controllers.UserController{}, "post:Login")
+
 	// beego.Router("/gaga", &controllers.MainController{})
 	// beego.Router("/api/food",&RestController{},"get:ListFood;post:CreateFood;put:UpdateFood;delete:DeleteFood")
 
