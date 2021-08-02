@@ -19,7 +19,10 @@ func (g *GameController) AddGame() {
 func (g *GameController) Get() {
 	id := g.Ctx.Input.Param(":id")
 	idint, _ := strconv.Atoi(id)
-	game := models.GetGameInfo(idint)
+	game, err := models.GetGameInfo(idint)
+	if err != nil {
+		g.Abort("404")
+	}
 	comments := models.GetCommentList(idint)
 
 	g.Data["game"] = game

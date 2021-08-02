@@ -21,13 +21,10 @@ const table_name = "game"
 // 	// orm.RunSyncdb("default", false, true)
 // }
 
-func GetGameInfo(id int) *Game {
+func GetGameInfo(id int) (*Game, error) {
 	game := Game{Id: id}
 	err := o.Read(&game)
-	if err != nil {
-		panic("no id")
-	}
-	return &game
+	return &game, err
 }
 
 func AddGame(game *Game) (int64, error) {

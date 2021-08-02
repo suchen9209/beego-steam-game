@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	// beego.ErrorController(&controllers.ErrorController{})
 	beego.SetStaticPath("/", "statics")
 	beego.Run()
 }
